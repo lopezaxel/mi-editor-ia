@@ -1,0 +1,13 @@
+{
+  "id": "framework-01",
+  "duration": 6,
+  "footage": "assets/fondo.mp4",
+  "mode": "body",
+  "elements": [
+    { "type": "diagram", "layout": "row", "slot": "top", "in": 0.4, "out": 5.0, "title": "Cómo edita la IA",
+      "nodes": ["Video base", "Prompt", "La IA procesa", "Renderiza", "Resultado"],
+      "reveal": [0.9, 1.3, 1.7, 2.1, 3.2],
+      "loop": { "from": 4, "to": 3, "label": "Loop: se revisa sola", "at": 2.6 } },
+    { "type": "lower-third", "slot": "bottom-left", "in": 1.0, "out": 4.8, "name": "Tu Nombre", "role": "Software · Consultoría" }
+  ]
+}

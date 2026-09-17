@@ -1,0 +1,26 @@
+# --- Videos pesados (grabaciones, renders) ---
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.webm
+
+# --- Dependencias de Node (se instalan por proyecto con npm i) ---
+node_modules/
+
+# --- Carpetas de render / trabajo temporal de HyperFrames ---
+**/renders/
+**/qa/
+**/.hyperframes/
+
+# --- Carpeta temporal de setup (si vuelve a aparecer) ---
+_setup-temp/
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+
+# --- Lo que SI se versiona a proposito (no tocar) ---
+# - estilo.md, prompts, escenas/*.json
+# - assets livianos: logos, fuentes (assets/fonts, assets/logos)
+# - edicion-liquid-skill/ (copia de referencia de la skill dentro del repo)

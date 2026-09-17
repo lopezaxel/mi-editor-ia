@@ -1,0 +1,100 @@
+/* liquid.css — material "Liquid Glass" aprobado + tipos de escena.
+   build_scene.mjs lo incrusta entero en cada index.html.
+   Las variables --lf-* se pisan desde el tema (estilo.md → tema.json). */
+:root {
+  --lf-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  --lf-ink: #0a2030;
+  --lf-label: #152f43;
+  --lf-accent: #0066ff;
+  --lf-title: #ffffff;
+  --lf-shadow: 0 25px 46px #04101c38, 0 7px 15px #04101c20;
+  --lf-text-glow: 0 1px 14px #ffffffa0;
+  --lf-label-glow: 0 1px 9px #ffffffb3;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #000; }
+body { font-family: var(--lf-font); color: var(--lf-ink); }
+#root { position: relative; width: 100%; height: 100%; overflow: hidden; perspective: 1600px; background: #000; }
+.lf-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+#lf-bg { position: absolute; inset: -60px; overflow: hidden; }
+#lf-bg .lf-video { filter: blur(38px) saturate(1.15) brightness(.82); }
+#lf-stage { position: absolute; inset: 0; overflow: hidden; }
+
+/* ── Material: 4 capas (lente SVG en optics · tinte · rim · glint) ── */
+.glass { position: absolute; border-radius: 44px; overflow: hidden; isolation: isolate; box-shadow: var(--lf-shadow); transform-style: preserve-3d; --glint-x: -20%; --glint-strength: .6; }
+.lg-optics, .lg-rim { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
+.lg-optics { z-index: -2; background: linear-gradient(120deg, #ffffff75 0%, #ffffff3b 42%, #eaf8ff30 72%, #ffffff6b 100%); box-shadow: inset 0 0 20px #eafaff35; }
+.lg-rim { z-index: 3; box-shadow: inset 0 2px 2px #ffffffd9, inset 0 -2px 3px #ffffff80, inset 2px 0 3px #0b27312b, inset -2px 0 3px #0b27312b; background: radial-gradient(ellipse at var(--glint-x) -20%, #ffffffcc 0, #ffffff4a 16%, transparent 38%), linear-gradient(120deg, #fff4, transparent 18%, transparent 76%, #ffffff28); opacity: var(--glint-strength); }
+.lg-rim::after { content: ""; position: absolute; inset: 3px; border-radius: inherit; border-top: 1px solid #ffffffc9; border-bottom: 1px solid #ffffffa0; box-shadow: inset 0 10px 16px -14px #ffffff, 0 -2px 8px #ffffff70; }
+.lg-content { position: absolute; inset: 0; }
+.glass.light.m-body .lg-optics { background: linear-gradient(120deg, #ffffff89 0%, #ffffff63 42%, #eaf8ff58 72%, #ffffff7e 100%); }
+.glass.dark { --lf-ink: #f4f8ff; --lf-label: #d5e4f2; --lf-text-glow: 0 1px 12px #000a; --lf-label-glow: 0 1px 9px #0009; }
+.glass.dark .lg-optics { background: linear-gradient(125deg, #131b2878, #111d2b64 55%, #26394875); }
+.glass.dark .lg-rim { box-shadow: inset 0 2px 2px #ffffff8c, inset 0 -2px 3px #ffffff45, inset 2px 0 3px #0006, inset -2px 0 3px #0006; }
+
+/* ── Texto común ── */
+.lf-caps { font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--lf-label); text-shadow: var(--lf-label-glow); white-space: nowrap; }
+.lf-ink { color: var(--lf-ink); text-shadow: var(--lf-text-glow); }
+.lf-dot { position: absolute; right: 32px; top: 32px; width: 14px; height: 14px; border-radius: 50%; background: var(--lf-accent); box-shadow: 0 0 0 7px #ffffff45; }
+
+/* stat-card */
+.stat .tag { position: absolute; left: 34px; top: 30px; font-size: 22px; }
+.stat .amount { position: absolute; left: 31px; top: 75px; right: 24px; font-size: 84px; line-height: 1.12; letter-spacing: -4px; font-weight: 750; white-space: nowrap; }
+.stat .amount span { font-size: 27px; letter-spacing: -1px; margin-left: 8px; font-weight: 700; }
+.stat .per { position: absolute; left: 35px; bottom: 29px; font-size: 25px; font-weight: 500; color: var(--lf-label); text-shadow: var(--lf-label-glow); }
+
+/* headline (sin vidrio de lente: titular sobre el cielo + pastilla) */
+.lf-headline { position: absolute; left: 0; top: 0; width: 1920px; height: 0; }
+.lf-headline .h-title { position: absolute; left: 290px; top: 75px; width: 1340px; text-align: center; font-size: 90px; font-weight: 750; letter-spacing: -3px; line-height: 1.1; color: var(--lf-title); text-shadow: 0 2px 3px #0003, 0 6px 24px #0006, 0 0 42px #06182c55; white-space: nowrap; }
+.lf-headline .h-pill { position: absolute; left: 715px; top: 190px; width: 490px; height: 52px; display: flex; align-items: center; justify-content: center; border-radius: 16px; font-size: 25px; font-weight: 550; letter-spacing: 3px; text-transform: uppercase; white-space: nowrap; border: 1px solid #ffffff80; backdrop-filter: blur(4px) saturate(1.2); -webkit-backdrop-filter: blur(4px) saturate(1.2); box-shadow: 0 14px 28px #05192820, inset 0 1px 1px #fffd, inset 0 -1px 1px #fff9; }
+.lf-headline .h-title.scrim::before { content: ""; position: absolute; left: 120px; right: 120px; top: -60px; bottom: -60px; z-index: -1; background: radial-gradient(closest-side, #06182c80 0%, #06182c52 50%, #06182c1c 80%, #06182c00 100%); }
+.h-pill.dark { background: #0c263859; color: #fff; text-shadow: 0 1px 8px #061220c0; }
+.h-pill.light { background: #eef6ff55; color: #102d43; text-shadow: 0 1px 7px #fffc; }
+
+/* phrase */
+.phrase .lg-content { display: flex; flex-direction: column; justify-content: center; gap: 18px; padding: 34px 38px; }
+.phrase .p-title { margin: 0; font-size: 50px; line-height: 1.08; letter-spacing: -1.8px; font-weight: 730; }
+.phrase .p-sub { margin: 0; font-size: 30px; line-height: 1.2; font-weight: 560; letter-spacing: -.5px; color: var(--lf-ink); text-shadow: var(--lf-text-glow); }
+
+/* steps + diagram (columna) */
+.steps .lg-content, .diagram-col .lg-content { padding: 34px 38px; }
+.steps .s-title, .diagram-col .s-title { margin: 0 0 24px; font-size: 45px; line-height: 1.08; letter-spacing: -1.5px; font-weight: 730; white-space: nowrap; }
+.steps ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 18px; }
+.steps li { display: flex; align-items: center; gap: 18px; height: 38px; font-size: 32px; letter-spacing: -.7px; font-weight: 550; white-space: nowrap; }
+.lf-marker { width: 10px; height: 10px; flex: 0 0 auto; border-radius: 50%; background: var(--lf-accent); box-shadow: 0 0 0 5px #f5fbff85; }
+.diagram-col .flow { display: flex; flex-direction: column; align-items: flex-start; }
+.diagram-col .node { height: 38px; font-size: 32px; line-height: 38px; font-weight: 600; letter-spacing: -.7px; white-space: nowrap; }
+.diagram-col .conn { display: block; width: 27px; height: 26px; margin: 4px 0 4px 10px; fill: none; stroke: var(--lf-accent); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+.diagram-col .loop-note { margin-top: 14px; height: 30px; font-size: 24px; font-weight: 700; letter-spacing: 1.5px; color: var(--lf-ink); text-shadow: var(--lf-label-glow); text-transform: uppercase; white-space: nowrap; }
+
+/* diagram (fila, arriba) */
+.diagram-row .r-label { position: absolute; left: 0; right: 0; top: 22px; text-align: center; font-size: 20px; }
+.diagram-row .cell { position: absolute; top: 58px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.diagram-row .num { width: 44px; height: 44px; border-radius: 50%; background: var(--lf-accent); color: #fff; font-size: 22px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 6px #ffffff55; }
+.diagram-row .n-label { font-size: 29px; line-height: 34px; height: 34px; font-weight: 650; letter-spacing: -.6px; white-space: nowrap; text-align: center; }
+.diagram-row svg.wire { position: absolute; left: 0; top: 0; overflow: visible; fill: none; stroke: var(--lf-accent); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+.diagram-row .loop-label { position: absolute; top: 196px; font-size: 20px; font-weight: 700; letter-spacing: 2px; color: var(--lf-ink); text-shadow: var(--lf-label-glow); text-transform: uppercase; white-space: nowrap; text-align: center; }
+
+/* logo-card */
+.logo .lg-content { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 28px; }
+.logo img { display: block; max-width: 78%; object-fit: contain; }
+.logo .l-label { font-size: 24px; font-weight: 650; letter-spacing: 3px; }
+
+/* photo-card */
+.photo .media { position: absolute; left: 13px; top: 13px; right: 13px; object-fit: cover; border-radius: 30px; z-index: 0; }
+.photo .caption { position: absolute; left: 26px; right: 22px; bottom: 26px; font-size: 26px; font-weight: 600; letter-spacing: -.5px; white-space: nowrap; }
+
+/* lower-third */
+.lower .lg-content { display: flex; flex-direction: column; justify-content: center; padding: 0 36px; gap: 6px; }
+.lower .lt-name { font-size: 40px; font-weight: 720; letter-spacing: -1px; line-height: 1.1; white-space: nowrap; }
+.lower .lt-role { font-size: 21px; }
+
+/* cta-window y ventana de split-screen */
+.window { border-radius: 35px; }
+.window .chrome { position: absolute; left: 22px; right: 22px; top: 14px; height: 44px; display: flex; align-items: center; gap: 8px; }
+.window .chrome i { width: 10px; height: 10px; border-radius: 50%; background: #17344877; }
+.glass.dark.window .chrome i { background: #ffffff66; }
+.window .address { margin-left: 12px; font-size: 23px; font-weight: 600; letter-spacing: -.4px; white-space: nowrap; }
+.window .viewport { position: absolute; left: 13px; right: 13px; top: 70px; bottom: 13px; border-radius: 22px; overflow: hidden; background: #fff; }
+.window .viewport .page { display: block; width: 100%; height: auto; max-width: none; }
+.window .viewport .screen { position: absolute; inset: 0; width: 100%; height: 100%; }

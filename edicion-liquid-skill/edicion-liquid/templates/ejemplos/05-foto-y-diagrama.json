@@ -1,0 +1,10 @@
+{
+  "id": "foto-01",
+  "duration": 6,
+  "footage": "assets/fondo.mp4",
+  "mode": "body",
+  "elements": [
+    { "type": "photo-card", "slot": "left", "in": 0.4, "out": 5.0, "src": "assets/fondo2.mp4", "media_start": 1, "caption": "Clip propio en marco de vidrio" },
+    { "type": "diagram", "layout": "column", "slot": "right", "in": 0.8, "out": 5.0, "title": "El loop", "nodes": ["Render", "Revisión", "Corrección"], "loop": { "from": 3, "to": 1, "label": "hasta que pase" } }
+  ]
+}

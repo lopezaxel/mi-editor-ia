@@ -1,0 +1,10 @@
+{
+  "id": "logos-01",
+  "duration": 6,
+  "footage": "assets/fondo.mp4",
+  "mode": "intro",
+  "elements": [
+    { "type": "logo-card", "slot": "left", "material": "light", "in": 0.4, "out": 4.9, "src": "assets/logo-ejemplo.svg", "label": "Software" },
+    { "type": "logo-card", "slot": "right", "material": "dark", "in": 1.2, "out": 5.0, "src": "assets/logo-ejemplo-blanco.svg", "label": "Consultoría" }
+  ]
+}

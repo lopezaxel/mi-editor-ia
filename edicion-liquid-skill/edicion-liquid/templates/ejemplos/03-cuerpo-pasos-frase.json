@@ -1,0 +1,10 @@
+{
+  "id": "cuerpo-01",
+  "duration": 6,
+  "footage": "assets/fondo.mp4",
+  "mode": "body",
+  "elements": [
+    { "type": "steps", "slot": "left", "in": 0.4, "out": 5.0, "title": "Antes de editar", "items": ["Video base", "Prompt del editor", "estilo.md completo"], "reveal": [1.0, 1.5, 2.0] },
+    { "type": "phrase", "slot": "right", "in": 0.8, "out": 5.0, "title": "Hablale como a tu editor", "sub": "Un brief claro, un resultado claro" }
+  ]
+}

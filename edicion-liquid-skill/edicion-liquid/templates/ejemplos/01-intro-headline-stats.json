@@ -1,0 +1,13 @@
+{
+  "id": "intro-01",
+  "duration": 6,
+  "fps": 60,
+  "footage": "assets/fondo.mp4",
+  "media_start": 0,
+  "mode": "intro",
+  "elements": [
+    { "type": "headline", "in": 0.4, "out": 4.9, "title": "MIS MENTORES.", "pill": "OTRO NIVEL.", "pill_tone": "dark" },
+    { "type": "stat-card", "in": 0.9, "out": 4.9, "slot": "left", "label": "Mis mentores", "value": "500 mil", "unit": "USD", "sub": "al mes", "source": "cámara 00:08 (lo dice la persona)" },
+    { "type": "stat-card", "in": 1.5, "out": 5.0, "slot": "right", "label": "Mis mentores", "value": "+1 millón", "unit": "USD", "sub": "al mes", "source": "cámara 00:10 (lo dice la persona)" }
+  ]
+}

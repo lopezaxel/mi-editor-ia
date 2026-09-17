@@ -1,0 +1,10 @@
+{
+  "id": "split-01",
+  "duration": 6,
+  "footage": "assets/fondo.mp4",
+  "mode": "body",
+  "elements": [
+    { "type": "split-screen", "in": 0.5, "out": 4.5, "src": "assets/pantalla.mp4", "media_start": 0,
+      "person_center_x": 875, "person_width_ratio": 0.38, "person_side": "left", "address": "Grabación de pantalla", "fit": "cover" }
+  ]
+}
