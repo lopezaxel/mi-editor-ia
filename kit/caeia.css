@@ -1,0 +1,81 @@
+/* ==========================================================================
+   CAEIA brand layer for HyperFrames compositions. Values mirror MOTION.md:
+   change them THERE first, then here. Load after assets/fonts/fonts.css.
+   ========================================================================== */
+:root {
+  --caeia-bg: #0a0e1a;
+  --caeia-cae: #0ea5e9;
+  --caeia-ia: #8b5cf6;
+  --caeia-cae-claro: #1d7fc4;
+  --caeia-ia-claro: #7c4fd6;
+  --caeia-texto: #ffffff;
+  --app-bg: #0f0b1e;
+  --app-texto: #ddd6fe;
+  --app-acento: #8b5cf6;
+  --app-acento-hondo: #6d28d9;
+  --font-mk: "Inter", Arial, sans-serif;
+  --font-app-title: "Space Grotesk", "Inter", sans-serif;
+  --font-app: "Geist", "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  /* premium.js / motion-kit tokens follow the brand */
+  --mk-ink: var(--caeia-bg);
+  --mk-accent: var(--caeia-cae);
+  --mk-accent2: var(--caeia-ia);
+  --mk-display: var(--font-mk);
+  --mk-body: var(--font-mk);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--caeia-bg); }
+#root { position: relative; overflow: hidden; font-family: var(--font-mk); color: var(--caeia-texto); -webkit-font-smoothing: antialiased; }
+.reel, .reel #root { width: 1080px; height: 1920px; }
+.wide, .wide #root { width: 1920px; height: 1080px; }
+.full { position: absolute; inset: 0; }
+
+/* ---------- backgrounds (flat brand dark + soft vignette; no glow, no blue↔violet blend) ---------- */
+#bg { position: absolute; inset: 0; background: var(--caeia-bg); }
+.vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(80% 70% at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.45)); }
+.grain { position: absolute; inset: 0; pointer-events: none; opacity: 0.035; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+
+/* ---------- raw footage (avatar, own recording, screen capture) ---------- */
+.base-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* text over footage needs a brand-dark scrim (dark → transparent; never a blue↔violet blend) */
+.scrim-top { position: absolute; left: 0; right: 0; top: 0; height: 52%; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(10, 14, 26, 0.92) 0%, rgba(10, 14, 26, 0.75) 55%, rgba(10, 14, 26, 0) 100%); }
+.scrim-bottom { position: absolute; left: 0; right: 0; bottom: 0; height: 45%; pointer-events: none;
+  background: linear-gradient(to top, rgba(10, 14, 26, 0.9) 0%, rgba(10, 14, 26, 0) 100%); }
+.panel { position: absolute; inset: 0; background: var(--caeia-bg); }
+
+/* ---------- camera world (Screen Studio style moves via CAEIA.cam) ---------- */
+#cam { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.reel #cam { width: 1080px; height: 1920px; }
+.wide #cam { width: 1920px; height: 1080px; }
+.shot { position: absolute; border-radius: 28px; overflow: hidden; box-shadow: 0 50px 120px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06); }
+.shot img, .shot video { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* ---------- headlines: data-w="Facturar en ARCA *te roba la tarde*" + MKP.words() ---------- */
+.t { position: absolute; left: 80px; right: 140px; font: 700 76px/1.08 var(--font-mk); letter-spacing: -0.03em; color: var(--caeia-texto); }
+.wide .t { left: 120px; right: 120px; font-size: 72px; }
+.t.hook { font-size: 96px; }
+.t.center { text-align: center; }
+.t .w { display: inline-block; opacity: 0; }
+.t .acc { color: var(--caeia-cae); }
+.t .al { color: var(--caeia-ia); }
+
+/* ---------- wordmark: CAE (blue) | IA (violet), literal split, never a gradient ---------- */
+.wordmark { font: 700 120px/1 var(--font-mk); letter-spacing: -0.04em; white-space: nowrap; }
+.wordmark .cae { color: var(--caeia-cae); }
+.wordmark .ia { color: var(--caeia-ia); }
+.handle { font: 600 40px/1 var(--font-mk); color: var(--caeia-texto); opacity: 0.8; }
+
+/* ---------- word-by-word captions (CAEIA.captions) ---------- */
+#subs { position: absolute; left: 80px; right: 140px; top: 1180px; display: flex; justify-content: center; pointer-events: none; }
+.wide #subs { left: 160px; right: 160px; top: 860px; }
+.cap-line { position: absolute; padding: 14px 26px 18px; border-radius: 18px; background: rgba(10, 14, 26, 0.7);
+  font: 700 58px/1.12 var(--font-mk); letter-spacing: -0.02em; text-align: center; color: var(--caeia-texto); opacity: 0; visibility: hidden; max-width: 100%; }
+.wide .cap-line { font-size: 48px; }
+.cap-line .cw[data-on="1"] { color: var(--caeia-cae); }
+
+/* ---------- reel safe-zone guide (debug only: add class "show-safe" to body) ---------- */
+.show-safe #root::after { content: ""; position: absolute; left: 80px; right: 140px; top: 220px; bottom: 480px; outline: 3px dashed rgba(255, 80, 80, 0.8); z-index: 999; }

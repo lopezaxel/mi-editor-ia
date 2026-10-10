@@ -1,76 +1,45 @@
 # mi-editor-ia
 
-Pipeline para producir contenido diario (reels/videos) para el Instagram de **CAEIA** (@caeia.app),
-usando avatares de IA clonados y edición estilo **Liquid Glass** de Apple (tarjetas de vidrio
-translúcido, split-screen, datos y logos) sin tocar CapCut/Premiere: la edición se genera con
-HTML/CSS/GSAP vía **HyperFrames** + **ffmpeg**, renderizada y auto-revisada por la skill de
-Claude Code `edicion-liquid`.
+El editor de motion graphics de **CAEIA** dentro de Claude Code. Axel trae el material crudo (su grabación, un clip de avatar con su voz, grabaciones de pantalla, capturas de la app, flyers) o una idea. La IA arma el reel o la pieza de venta con código (**HyperFrames 0.8.43 + GSAP + ffmpeg**), renderiza, revisa sus propios cuadros y corrige antes de entregar. Sin CapCut ni Premiere.
 
 ## Qué hay en este repo
 
-- `estilo.md` — tu identidad de marca (colores, logo, tipografía, tono de música) que la skill
-  lee antes de cada edición. Completar los `<<COMPLETAR>>` una sola vez.
-- `contexto-caeia.md` — qué es CAEIA, a quién le habla, qué mostrar y qué no, colores exactos de
-  marca. Contexto de producto para que los gráficos de cada video sean coherentes y no inventen
-  funciones/cifras que no existen.
-- `edicion-liquid-skill/` — copia de referencia del paquete original de la skill (documentación,
-  ejemplos, INSTALAR.md). La copia *activa* que usa Claude Code vive en
-  `~/.claude/skills/edicion-liquid/` (fuera del repo, es de la máquina).
-- `proyectos-video/` — una subcarpeta por cada reel/video que se edita. Los videos pesados
-  (.mp4/.mov) y los renders NO se versionan (ver `.gitignore`); sí se versionan los prompts,
-  planes de escena (`escenas/*.json`) y assets livianos (logos, fuentes).
+| Ruta | Qué es |
+|---|---|
+| `brand.md` | **Qué es CAEIA y qué se puede decir** (estado real en homologación, prohibiciones, fechas). Fuente única. |
+| `MOTION.md` | **Cómo se ve y se mueve**: colores, tipografías, formatos, zona segura del reel, ritmo, movimiento, prohibidos. |
+| `CLAUDE.md` | Reglas del proyecto para Claude Code (leer los dos archivos de arriba primero). |
+| `.claude/skills/caeia-editor/` | **La skill orquestadora.** Decide el modo según el material, arma el proyecto, construye, revisa y entrega. |
+| `.claude/skills/launch-video`, `motion-effects`, `animated-chart`, `motion-brief-writer` | Skills de Charlie Hills (MIT), adaptadas a CAEIA y a HyperFrames. Las usa `caeia-editor`. |
+| `kit/` | Librería de animación: `caeia.css` y `caeia.js` (marca, subtítulos palabra por palabra, cámara), `premium.js` (barridos, whips, cortes), `three-stage.js` (iPhone 3D), plantilla y `nuevo_proyecto.py`. Base: video-saas-premium de Rayyan Montoya (MIT). |
+| `kit/scripts/` | Audio: `audio_tools.py`, `eleven_vo.py` (ElevenLabs), `sfx_curate.py`. Necesitan `numpy`. |
+| `assets/fonts/` | Inter, Space Grotesk, Geist y JetBrains Mono (OFL), para que el render salga igual en cualquier máquina. |
+| `proyectos-video/` | Una carpeta por pieza. Los videos y renders no se versionan. |
+| `edicion-liquid-skill/` | Copia de referencia de la skill de Claudio Conde (talking-head horizontal Liquid Glass). No se modifica. |
+| `estilo.md` | El `estilo.md` que usa `edicion-liquid` (todavía con `<<COMPLETAR>>`). |
+| `contexto-caeia.md` | Histórico (17/9). Reemplazado por `brand.md`. |
 
-## Flujo de trabajo (por video)
+## Cómo se usa
 
-1. Crear una carpeta dentro de `proyectos-video/` (ej. `proyectos-video/2026-09-17-reel-onboarding/`).
-2. Poner adentro la grabación a cámara del avatar (y la de pantalla si hay).
-3. Abrir Claude Code **en esa carpeta** y pedirle, con la plantilla de
-   `~/.claude/skills/edicion-liquid/prompt-editor.md`:
-   > Editá este video con la skill edicion-liquid, usando mi estilo.md.
-   (`estilo.md` está en la raíz de este repo — copiar la ruta o el contenido al prompt).
-4. La skill transcribe, corta silencios, arma las escenas, renderiza con HyperFrames+ffmpeg,
-   revisa su propio render contra `estilo.md` y corrige sola hasta pasar el QA.
-5. El resultado (`renders/final.mp4`) queda dentro de la carpeta del proyecto — no se sube al repo,
-   se sube directo a Instagram.
+Abrí Claude Code en esta carpeta y pedí lo que necesitás, como a un editor:
 
-## Setup de una máquina nueva (notebook / PC de escritorio)
+> Armame un reel con este clip del avatar: `D:\...\avatar-01.mp4`. Gancho sobre lo lento que es ARCA, cierre con @caeia.app.
 
-Dependencias necesarias en el sistema (no viven en este repo):
+La skill `caeia-editor`:
+1. pregunta lo que falte, en una sola tanda;
+2. propone los beats y espera tu OK;
+3. crea `proyectos-video/<fecha-nombre>/`;
+4. transcribe, construye, chequea y revisa cuadros;
+5. renderiza, mezcla el audio y entrega `renders/final.mp4` con un resumen.
 
-| herramienta | versión | chequeo |
+## Requisitos de la máquina
+
+| Herramienta | Versión | Chequeo |
 |---|---|---|
 | Node.js | 22+ | `node -v` |
-| ffmpeg (con ffprobe) | cualquiera reciente | `ffmpeg -version` |
-| Python | 3.10+ | `python --version` |
-| hyperframes | 0.8.43 exacto (npm global) | `hyperframes --version` |
+| ffmpeg + ffprobe | reciente | `ffmpeg -version` |
+| Python | 3.10+ (`python` en Windows) | `python --version` |
+| HyperFrames | **0.8.43** (global; cada proyecto la fija en su `package.json`) | `hyperframes --version` |
+| numpy | para los scripts de audio y los de `edicion-liquid` | `python -c "import numpy"` |
 
-Instalación (Windows, con winget):
-```powershell
-winget install Gyan.FFmpeg
-winget install Python.Python.3.12
-npm i -g hyperframes@0.8.43
-```
-
-Instalación (Mac, con Homebrew):
-```bash
-brew install node@22 ffmpeg python
-npm i -g hyperframes@0.8.43
-```
-
-Después, copiar la skill a la carpeta de skills de Claude Code:
-```bash
-# Mac/Linux
-cp -R edicion-liquid-skill/edicion-liquid ~/.claude/skills/edicion-liquid
-
-# Windows (PowerShell)
-Copy-Item -Recurse -Force edicion-liquid-skill\edicion-liquid "$HOME\.claude\skills\edicion-liquid"
-```
-Reiniciar Claude Code para que la detecte.
-
-Detalle completo (incluye Skills oficiales de HyperFrames y whisper.cpp opcional):
-`edicion-liquid-skill/INSTALAR.md`.
-
-## Estado de `estilo.md`
-
-Completar manualmente antes del primer video: nombre de marca, negocios a mostrar, colores,
-tipografía, logos (rutas a `assets/`), tono de música. Guía: `edicion-liquid-skill/edicion-liquid/ejemplos/estilo-claudio.md`.
+Cada proyecto instala sus dependencias adentro (`npm i hyperframes@0.8.43 gsap@3.15.0`). Nada global.

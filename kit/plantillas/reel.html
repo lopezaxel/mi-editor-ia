@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<!-- Plantilla CAEIA para HyperFrames 0.8.43 (la arma kit/nuevo_proyecto.py). Reemplazá los actos de ejemplo;
+     no cambies el contrato: #root con data-composition-id, un timeline pausado en window.__timelines.root. -->
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width={{W}}, height={{H}}">
+    <link rel="stylesheet" href="assets/fonts/fonts.css">
+    <link rel="stylesheet" href="kit/caeia.css">
+    <script src="node_modules/gsap/dist/gsap.min.js"></script>
+    <script src="kit/premium.js"></script>
+    <script src="kit/caeia.js"></script>
+  </head>
+  <body class="{{CLASE}}">
+    <div id="root" data-composition-id="root" data-start="0" data-duration="{{DUR}}" data-width="{{W}}" data-height="{{H}}">
+      <div id="bg" class="clip" data-start="0" data-duration="{{DUR}}"></div>
+{{CRUDO}}
+      <div id="cam"></div>
+      <div class="vignette"></div>
+      <div class="scrim-top" id="scrim"></div>
+      <div class="panel" id="cierre-bg" style="opacity: 0"></div>
+      <div id="front" class="full">
+        <div class="t hook center" id="h1" style="top: {{HOOK_TOP}}px" data-w="Tu gancho *en dos líneas*"></div>
+        <div class="full" id="cierre" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px">
+          <div class="wordmark" id="wm"></div>
+          <div class="handle" id="hd">@caeia.app</div>
+        </div>
+      </div>
+      <div id="subs"></div>
+      <div class="grain"></div>
+    </div>
+
+    <!-- transcript.json de `hyperframes transcribe` (palabras {text,start,end}); [] = sin subtítulos -->
+    <script type="application/json" id="transcript">[]</script>
+
+    <script>
+      const W = {{W}}, H = {{H}}, DUR = {{DUR}};
+      const root = gsap.timeline({ paused: true });
+      MKP.use(root); MKP.words(); CAEIA.wordmark("#wm");
+      const cam = CAEIA.cam(root, "#cam", W, H);
+
+      // Acto 1: gancho (primeros 2 s). Con voz: MKP.sayIn("#h1 .w", tiemposDeCadaPalabra)
+      MKP.smearIn("#h1 .w", 0.15, { stagger: 0.08 });
+      MKP.whip("#h1", Math.min(2.6, DUR - 2.2), { dx: -560 });
+      root.to("#scrim", { autoAlpha: 0, duration: 0.4, ease: "power2.in" }, Math.min(2.8, DUR - 2.0));
+
+      // Cierre: corte en movimiento a fondo de marca + wordmark + usuario
+      MKP.cut("#cierre-bg", DUR - 2.1);
+      gsap.set("#wm, #hd", { autoAlpha: 0 });
+      MKP.smearIn("#wm", DUR - 1.9, { dx: 120 });
+      MKP.smearIn("#hd", DUR - 1.6, { dx: 80 });
+
+      // Subtítulos palabra por palabra (offset = data-start del crudo − data-media-start)
+      CAEIA.captions(root, CAEIA.json("transcript"), { offset: 0 });
+
+      root.set({}, {}, DUR);
+      // Contrato HyperFrames: el linter exige este registro literal, con el data-composition-id como clave
+      window.__timelines = window.__timelines || {};
+      window.__timelines["root"] = root;
+      root.seek(0);
+    </script>
+  </body>
+</html>

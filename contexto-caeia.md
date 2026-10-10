@@ -1,3 +1,5 @@
+> **Histórico (17/9/2026).** Reemplazado por `brand.md` (qué se dice) y `MOTION.md` (cómo se ve) el 2026-10-10. Lo de acá puede estar desactualizado: Excel ya existe en homologación, el cobro con Mercado Pago está bloqueado y falta el evento del 18/11. Usá `brand.md`.
+
 # contexto-caeia.md — qué es el producto que estos videos venden
 
 Este archivo le da a la IA (y a cualquiera que edite) el contexto del **producto real** detrás de los

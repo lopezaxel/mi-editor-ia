@@ -24,3 +24,7 @@ Thumbs.db
 # - estilo.md, prompts, escenas/*.json
 # - assets livianos: logos, fuentes (assets/fonts, assets/logos)
 # - edicion-liquid-skill/ (copia de referencia de la skill dentro del repo)
+
+# --- Proyectos de prueba del kit (carpetas que empiezan con _) ---
+proyectos-video/_*/
+__pycache__/
