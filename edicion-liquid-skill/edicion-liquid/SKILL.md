@@ -1,11 +1,17 @@
 ---
 name: edicion-liquid
-description: Edita videos talking-head (una persona hablando a cámara) con HyperFrames en estilo Liquid Glass de Apple — tarjetas de vidrio translúcido con refracción, cifras, logos, diagramas, split-screen con grabación de pantalla y música tenue — a partir de un video base y un prompt tipo "brief para tu editor". Usar cuando pidan editar, recortar o agregar gráficos a un video grabado a cámara con este estilo, o mencionen edicion-liquid, liquid glass o estilo.md. No usar para videos generados desde cero sin grabación, reels verticales ni para operar CapCut/Premiere.
+description: Edita videos talking-head (una persona hablando a cámara, incluye avatares de IA) con HyperFrames — tarjetas gráficas (cifras, logos, diagramas, split-screen con grabación de pantalla) y música tenue — a partir de un video base y un prompt tipo "brief para tu editor". El estilo visual es elegible (default Liquid Glass, o Saturado Bold, ver `estilos/`) y el formato también (horizontal 16:9 o vertical 9:16 para reels/TikTok, ver `--format`). Usar cuando pidan editar, recortar o agregar gráficos a un video grabado a cámara o generado con avatar de IA, o mencionen edicion-liquid, liquid glass, saturado bold, reel, TikTok o estilo.md. No usar para animaciones sin footage de base ni para operar CapCut/Premiere.
 ---
 
 # Edición Liquid
 
-Editás un video grabado a cámara como lo haría un editor, pero sin tocar un programa de edición: **generás HTML/CSS/GSAP con HyperFrames y ffmpeg**, renderizás, revisás tu propio render y corregís hasta que pase. La persona te habla como a su editor; vos entregás el video terminado.
+Editás un video grabado a cámara (o un avatar de IA hablando) como lo haría un editor, pero sin tocar un programa de edición: **generás HTML/CSS/GSAP con HyperFrames y ffmpeg**, renderizás, revisás tu propio render y corregís hasta que pase. La persona te habla como a su editor; vos entregás el video terminado.
+
+Esta skill es un **motor** (transcripción, corte de silencios, plan de escenas, render, QA) con dos ejes intercambiables:
+- **Estilo** (piel visual: colores, tipografía, si hay vidrio o no) — carpeta `estilos/`, flag `--style`.
+- **Formato** (orientación del lienzo: horizontal 16:9 u vertical 9:16) — flag `--format`, ver "## Formato".
+
+El JSON de escena y los 10 tipos de elemento son los mismos sin importar estilo o formato — lo único que cambia es la piel visual y la geometría del lienzo.
 
 ## Regla madre
 
@@ -28,9 +34,39 @@ Editás un video grabado a cámara como lo haría un editor, pero sin tocar un p
 
 ## Cuándo activarte
 
-- "Editá este video", "armame la intro", "agregale los gráficos", "hacelo estilo liquid glass/Apple".
+- "Editá este video", "armame la intro", "agregale los gráficos", "hacelo estilo liquid glass/Apple/saturado", "armame un reel/TikTok con esto".
 - Hay un `estilo.md` o un prompt con la forma de `prompt-editor.md`.
-- No: reels 9:16, animaciones sin footage, edición en apps de escritorio.
+- No: animaciones 100% generadas sin footage/avatar de base, edición en apps de escritorio.
+
+## Estilos disponibles
+
+Cada estilo vive en `estilos/<nombre>/` (un `style.css` con la misma piel visual sobre las mismas clases + un `estilo-visual.md` con cuándo usarlo). Se elige con `--style <nombre>` al construir cada escena (paso 2 del pipeline); sin el flag se usa `liquid-glass`.
+
+| estilo | qué es | cuándo |
+|---|---|---|
+| `liquid-glass` (default) | vidrio translúcido con refracción, sobrio, movimiento 3D | talking-head profesional/cercano, demos de producto, marcas con UI glassmorphism |
+| `saturado-bold` | tarjetas planas y opacas, borde grueso, sombra dura, tipografía enorme y saturada | ganchos agresivos, contenido tipo feed viral, CTAs |
+
+Si el prompt no dice qué estilo usar y no es obvio por el tono del video, preguntalo **una vez, en bloque**, junto con el resto de datos que falten — no asumas. Para sumar un estilo nuevo a la librería: crear `estilos/<nombre>/style.css` (mismas clases que `templates/liquid.css`, ver comentarios de cada bloque) + `estilos/<nombre>/estilo-visual.md`; el motor (`build_scene.mjs`, los scripts, la API de escenas) no cambia.
+
+## Formato
+
+Se elige con `--format <nombre>` al construir cada escena; sin el flag se usa `horizontal`. Cambia el tamaño del lienzo y los márgenes/zona de cara por default — el JSON de escena (tipos, campos) es el mismo.
+
+| formato | lienzo | cuándo |
+|---|---|---|
+| `horizontal` (default) | 1920×1080 | video largo (charla, demo), YouTube, contenido no vertical |
+| `vertical` | 1080×1920 | reels de Instagram, TikTok, YouTube Shorts |
+
+Notas para `vertical`:
+- **`safe_zone` default** asume una persona/avatar centrado en la columna central del cuadro; si el encuadre real es distinto, ajustalo por escena como en horizontal.
+- **Slots `left`/`right` con tarjetas anchas (500-600px) suelen pisar la cara** en un lienzo de 1080 de ancho — no hay lugar a los costados de un sujeto centrado. Preferí `top`, `bottom-left`/`bottom-right`, o un `slot: {x,y}` explícito con un `width` más angosto.
+- **`split-screen` no está afinado para vertical todavía** — funciona (no revienta), pero las proporciones se pensaron para un lienzo horizontal; el builder avisa con un AVISO cuando lo usás en vertical. Revisá la snapshot con más atención que de costumbre, o esperá a que se rediseñe (ver `templates/API.md`).
+- Para avatares de IA (sin grabación de pantalla real), `split-screen`/`cta-window` normalmente no aplican: el video es la persona sola, así que `headline`, `stat-card`, `phrase`, `lower-third` son los tipos que más se usan.
+
+## Ritmo para reels cortos (hook-driven)
+
+El framework de "intro densa (recurso cada 3-6s) / cuerpo sobrio (cada 30-60s)" está pensado para un video largo donde después del gancho inicial conviene que respire. **Un reel de 40-90s para retener de punta a punta necesita estar denso todo el tiempo**, no solo al principio: marcá **todas** las escenas con `"mode": "intro"` en vez de mezclar con `"body"`. La elección de modo es una decisión de `escenas/plan.json`, no depende del minutaje real del video — nada obliga a que "intro" sean literalmente los primeros segundos.
 
 ## Antes de empezar (una sola vez por máquina)
 
@@ -61,9 +97,9 @@ Escribí `escenas/plan.json` (`{"scenes":[...]}`) con, para cada escena: `id`, t
 
 ### 2. Construir cada escena
 ```bash
-node <skill>/templates/build_scene.mjs --scene escenas/plan.json --id intro-01 --theme tema.json
+node <skill>/templates/build_scene.mjs --scene escenas/plan.json --id intro-01 --theme tema.json --style liquid-glass --format horizontal
 ```
-El builder genera la lente exacta para cada tarjeta, embebe todo en `index.html` y **se niega a construir** si una tarjeta pisa la cara, se superpone con otra, entra antes de 0,35 s o sale después de `duración − 0,35 s`, o si una cifra no tiene `source`. Se corrige el JSON, nunca el HTML generado. Tipos: `stat-card`, `headline`, `phrase`, `steps`, `diagram`, `logo-card`, `photo-card`, `lower-third`, `cta-window`, `split-screen`. Ejemplos listos en `templates/ejemplos/`.
+El builder genera la lente exacta para cada tarjeta, embebe todo en `index.html` y **se niega a construir** si una tarjeta pisa la cara, se superpone con otra, entra antes de 0,35 s o sale después de `duración − 0,35 s`, o si una cifra no tiene `source`. Se corrige el JSON, nunca el HTML generado. Tipos: `stat-card`, `headline`, `phrase`, `steps`, `diagram`, `logo-card`, `photo-card`, `lower-third`, `cta-window`, `split-screen`. Ejemplos listos en `templates/ejemplos/`. `--style` y `--format` son los únicos flags que cambian; el JSON de escena es idéntico (ver "## Estilos disponibles" y "## Formato").
 
 ### 3. Música
 Tenue y de fondo, nunca protagonista. Por defecto, ambient generada localmente (ver `estilo.md` › Música); si la persona trae una pista, se usa esa. Mezcla con **ducking bajo la voz**: `mezclar_audio.py --intro-fin 0 --musica-bajo-voz -11 --musica-pausa -7` (valores aprobados; subí solo si la persona lo pide). Detalles de mezcla: skill `hyperframes-audio`; para generar/buscar audio: `media-use`. Nada con copyright que la persona no haya provisto.
@@ -72,7 +108,7 @@ Tenue y de fondo, nunca protagonista. Por defecto, ambient generada localmente (
 ```bash
 npx hyperframes render --fps 60 --quality delivery --workers 1 --output renders/<id>.mp4
 ```
-**Un render por vez, un worker.** No reconstruyas `index.html` mientras renderiza. Verificá cada salida: 1920×1080, 60 fps, cantidad de frames exacta = duración × 60.
+**Un render por vez, un worker.** No reconstruyas `index.html` mientras renderiza. Verificá cada salida: 1920×1080 (horizontal) o 1080×1920 (vertical) según el `--format` usado, 60 fps, cantidad de frames exacta = duración × 60.
 Después `scripts/ensamblar.py` reemplaza cada tramo del máster por su render y mezcla audio y música.
 
 ### 5. QA loop (automático)
@@ -116,7 +152,7 @@ Si algo falla, corregís el JSON o el corte, reconstruís, re-renderizás esa es
 
 ## El material Liquid Glass
 
-Receta aprobada, 4 capas por tarjeta (detalle en `templates/API.md` › Material): lente SVG con mapa de desplazamiento (squircle + Snell BK7, `templates/lib/glass-optics.mjs`, MIT, licencia en `templates/lib/liquid-glass-LICENSE`) → tinte blanco translúcido → borde especular → reflejo animado. Es una aproximación CSS/SVG del material de Apple, no el material nativo.
+Receta aprobada, 4 capas por tarjeta (detalle en `templates/API.md` › Material): lente SVG con mapa de desplazamiento (squircle + Snell BK7, `templates/lib/glass-optics.mjs`, MIT, licencia en `templates/lib/liquid-glass-LICENSE`) → tinte blanco translúcido → borde especular → reflejo animado. Es una aproximación CSS/SVG del material de Apple, no el material nativo. Este es el estilo default (`liquid-glass`); para otros estilos ver `estilos/<nombre>/estilo-visual.md`.
 Alternativas del registry: `ios26-liquid-glass` y `liquid-glass-widgets` (WebGL) vía `hyperframes-registry`. Usalas solo si la persona las pide; por defecto, la receta SVG.
 
 ## Archivos
@@ -127,8 +163,10 @@ Alternativas del registry: `ios26-liquid-glass` y `liquid-glass-widgets` (WebGL)
 | `prompt-editor.md` | plantilla del brief + ejemplo lleno |
 | `ejemplos/estilo-claudio.md` | un `estilo.md` completo de referencia |
 | `ejemplos/previews/` | cómo tiene que verse |
-| `templates/build_scene.mjs` | constructor de escenas (API en `templates/API.md`) |
-| `templates/liquid.css` | material y tipos de escena |
-| `templates/generate-lens-maps.mjs` | exporta mapas de lente sueltos |
-| `templates/ejemplos/*.json` | una escena de cada tipo + `tema-ejemplo.json` |
-| `scripts/*` | transcripción, cortes, sync de pantalla, color, ensamblado, verificación |
+| `templates/build_scene.mjs` | constructor de escenas, multi-estilo (`--style`) y multi-formato (`--format`) (API en `templates/API.md`) |
+| `templates/liquid.css` | piel visual del estilo default `liquid-glass` (ruta histórica, no se movió) |
+| `estilos/<nombre>/style.css` | piel visual de cada estilo adicional (mismas clases que `liquid.css`) |
+| `estilos/<nombre>/estilo-visual.md` | cuándo usar ese estilo y cuándo no |
+| `templates/generate-lens-maps.mjs` | exporta mapas de lente sueltos (solo relevante para `liquid-glass`) |
+| `templates/ejemplos/*.json` | una escena de cada tipo + `tema-ejemplo.json` (sirven para cualquier estilo) |
+| `scripts/*` | transcripción, cortes, sync de pantalla, color, ensamblado, verificación (no cambian por estilo) |

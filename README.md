@@ -15,7 +15,7 @@ El editor de motion graphics de **CAEIA** dentro de Claude Code. Axel trae el ma
 | `kit/scripts/` | Audio: `audio_tools.py`, `eleven_vo.py` (ElevenLabs), `sfx_curate.py`. Necesitan `numpy`. |
 | `assets/fonts/` | Inter, Space Grotesk, Geist y JetBrains Mono (OFL), para que el render salga igual en cualquier máquina. |
 | `proyectos-video/` | Una carpeta por pieza. Los videos y renders no se versionan. |
-| `edicion-liquid-skill/` | Copia de referencia de la skill de Claudio Conde (talking-head horizontal Liquid Glass). No se modifica. |
+| `edicion-liquid-skill/` | Skill `edicion-liquid` (talking-head, base de Claudio Conde): un **motor** (transcripción, corte de silencios, render, QA) con una **librería de estilos** intercambiable en `edicion-liquid/estilos/` (hoy: `liquid-glass` default y `saturado-bold`; sumar uno es agregar una carpeta con `style.css` + `estilo-visual.md`, sin tocar el motor). Se elige con el campo "Estilo visual" de `edicion-liquid/prompt-editor.md`. |
 | `estilo.md` | El `estilo.md` que usa `edicion-liquid` (todavía con `<<COMPLETAR>>`). |
 | `contexto-caeia.md` | Histórico (17/9). Reemplazado por `brand.md`. |
 

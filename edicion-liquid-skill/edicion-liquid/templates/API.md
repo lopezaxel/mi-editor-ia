@@ -1,16 +1,26 @@
-# API de escenas Liquid Glass
+# API de escenas (multi-estilo)
 
-Una **escena** es un tramo corto del video base (normalmente 4 a 12 s) con uno o varios elementos de vidrio encima. Cada escena se construye a un `index.html` de HyperFrames, se valida, se renderiza sola y después `scripts/ensamblar.py` la pega en su lugar del máster.
+Una **escena** es un tramo corto del video base (normalmente 4 a 12 s) con uno o varios elementos gráficos encima. Cada escena se construye a un `index.html` de HyperFrames, se valida, se renderiza sola y después `scripts/ensamblar.py` la pega en su lugar del máster.
+
+**Esta API (los 10 tipos de elemento, sus campos, las reglas de timing) es la misma para cualquier estilo o formato.** Lo que cambia entre estilos es la piel visual (`--style <nombre>`, ver SKILL.md › "Estilos disponibles"); lo que cambia entre formatos es el tamaño del lienzo y los márgenes/zona de cara por default (`--format <nombre>`, ver SKILL.md › "Formato") — el JSON de escena no se toca en ninguno de los dos casos.
 
 ```bash
 # dentro del proyecto HyperFrames (con node_modules/gsap y hyperframes instalados)
-node <skill>/templates/build_scene.mjs --scene escenas/intro-01.json --theme tema.json
+node <skill>/templates/build_scene.mjs --scene escenas/intro-01.json --theme tema.json --style liquid-glass --format horizontal
 npx hyperframes check --at 1.2,3,5.8
 npx hyperframes snapshot --at 3 --no-end --describe false --output qa/intro-01
 npx hyperframes render --fps 60 --quality delivery --workers 1 --output renders/intro-01.mp4
 ```
 
-Flags: `--scene <json>` (una escena, o `{"scenes":[...]}` + `--id <id>`), `--project <dir>` (default: carpeta actual; las rutas del JSON son relativas a esta carpeta), `--theme <json>`, `--out <html>` (default `<project>/index.html`), `--no-check-assets`, `--types`, `--help`.
+Flags: `--scene <json>` (una escena, o `{"scenes":[...]}` + `--id <id>`), `--project <dir>` (default: carpeta actual; las rutas del JSON son relativas a esta carpeta), `--theme <json>`, `--style <nombre>` (default `liquid-glass`), `--format <nombre>` (default `horizontal`; `vertical` = 1080×1920 para reels/TikTok), `--out <html>` (default `<project>/index.html`), `--no-check-assets`, `--types`, `--help`.
+
+### Formato vertical (1080×1920): qué cambia y qué no
+
+- El lienzo (`data-width`/`data-height`, el `<meta viewport>`) pasa a 1080×1920 automáticamente.
+- `safe_zone` default cambia a `[240, 420, 600, 1000]` (columna central, dejando lugar arriba para `headline` y abajo para `lower-third`/CTA). Si el encuadre real difiere, se pisa por escena como siempre.
+- `headline` (título + pastilla) escala proporcional al lienzo — geometría idéntica en espíritu, solo más angosta y más arriba.
+- Los slots `top`, `bottom-left`, `bottom-right` y `{x,y}` funcionan igual que en horizontal. **`left`/`right` con el ancho default de una tarjeta (546-590px) casi siempre pisan la zona de cara** en un lienzo de 1080px — el builder lo va a rechazar con el error de superposición; la corrección es achicar el `width` explícito o cambiar de slot, no ensanchar `safe_zone` a mano para esquivarlo.
+- `split-screen` **no está rediseñado para vertical**: la fórmula (persona recortada a un lado, ventana de pantalla al otro) sigue siendo la de un split horizontal y solo se le ajustó lo necesario para no desbordar el lienzo. El builder emite un AVISO cuando se usa en `--format vertical`. Si el proyecto necesita mostrar pantalla en un reel vertical, lo más probable es que convenga un layout apilado (persona abajo, pantalla arriba) en vez de lado a lado — pendiente de diseñar cuando haya un caso real.
 Además escribe `scenes/<id>.html.txt` y `scenes/<id>.json` para reeditar. Imprime un JSON con las cajas de cada elemento y un `sugerido_check`.
 Código de salida `2` = la escena viola una regla. Se corrige el JSON, nunca el HTML generado.
 
@@ -98,7 +108,9 @@ Se escribe una vez a partir de `estilo.md`:
 ```
 El render de HyperFrames es determinista: las fuentes de sistema de Apple (`SF Pro`, `Helvetica Neue`, `-apple-system`) se reemplazan por **Inter**. Para una tipografía exacta, poné el archivo en `assets/fonts/` y declaralo en `font_faces` (y respetá su licencia).
 
-## Material (la receta aprobada, por si se escribe una escena a mano)
+## Material del estilo `liquid-glass` (la receta aprobada, por si se escribe una escena a mano)
+
+Específico de este estilo — cada estilo adicional tiene su propia receta en `estilos/<nombre>/estilo-visual.md`.
 
 Cuatro capas por tarjeta, en `liquid.css`:
 1. **Lente**: mapa de desplazamiento PNG (squircle + Snell, vidrio BK7, `lib/glass-optics.mjs`) → filtro SVG `feImage` + `feDisplacementMap` de una sola pasada, `filterUnits="userSpaceOnUse"`, PNG embebido como data URI; se aplica con `backdrop-filter: url(#lente) blur(1.1–1.8px) saturate(1.15–1.4)`.

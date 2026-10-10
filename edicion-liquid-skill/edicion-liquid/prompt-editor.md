@@ -13,6 +13,8 @@ Editá este video con la skill edicion-liquid, usando mi estilo.md.
 - Grabación de pantalla / iPad: <ruta o "no hay">
 - Assets extra (logos, fotos, capturas): <rutas>
 - Música: <ruta o "la de estilo.md">
+- Estilo visual: <liquid-glass (default) | saturado-bold | otro de estilos/ | "elegí vos según el tono">
+- Formato: <horizontal 16:9 (default) | vertical 9:16 (reel/TikTok)>
 
 ## 2. Objetivo del video
 - De qué trata, en una línea: <...>
@@ -57,6 +59,8 @@ Editá este video con la skill edicion-liquid, usando mi estilo.md.
 - Grabación de pantalla / iPad: videos/2026-09-16-ipad.mov (dibujo el framework)
 - Assets extra: assets/logos/software.png, assets/logos/consultoria.png, assets/landing-captura.png
 - Música: la de estilo.md
+- Estilo visual: liquid-glass (default)
+- Formato: horizontal (default)
 
 ## 2. Objetivo del video
 - De qué trata: cómo edito mis videos con IA sin tocar un programa de edición.
@@ -90,6 +94,54 @@ Editá este video con la skill edicion-liquid, usando mi estilo.md.
 
 ## 9. Entrega
 - Archivo: renders/2026-09-16-final.mp4
-- Formato: 1920×1080, 60 fps
+- Resolución: 1920×1080, 60 fps (según el Formato de la sección 1)
+- Antes de entregar: revisá tu render solo y corregí lo que haga falta.
+```
+
+## Ejemplo lleno (reel vertical con avatar de IA)
+
+Caso típico: varios clips cortos de un avatar de IA clonado, unidos en un solo reel corto para Instagram/TikTok — sin grabación de pantalla, foco 100% en retener del segundo 1.
+
+```markdown
+Editá este video con la skill edicion-liquid, usando mi estilo.md.
+
+## 1. Video base y fuentes
+- Video a cámara: videos/avatar-clip-1.mp4, videos/avatar-clip-2.mp4, videos/avatar-clip-3.mp4, videos/avatar-clip-4.mp4 (unir en ese orden)
+- Grabación de pantalla / iPad: no hay
+- Assets extra: assets/logos/caeia.png
+- Música: la de estilo.md
+- Estilo visual: saturado-bold (gancho agresivo, primeros 3 segundos)
+- Formato: vertical (reel de Instagram/TikTok)
+
+## 2. Objetivo del video
+- De qué trata: por qué facturar por WhatsApp con CAEIA es más rápido que ARCA.
+- Qué tiene que hacer el que lo mira: quedarse viendo hasta el final y probar la app.
+
+## 3. Intro (primeros 3 segundos)
+- Qué mostrar: titular gancho apenas arranca el primer clip (ej. "ARCA TE HACE PERDER TIEMPO."), sin esperar a que la persona termine la frase.
+- Datos: solo los que digo en cámara.
+- Logos: logo de CAEIA en el cierre, no en la intro.
+
+## 4. Cuerpo (todo el reel, no solo la intro)
+- Denso de punta a punta: cada escena en `"mode": "intro"` (ver SKILL.md § Ritmo para reels cortos) — no bajar el ritmo a mitad de video.
+- Un recurso gráfico por clip como mínimo (cifra, frase o pasos), tomado de lo que digo en cada uno.
+- Frecuencia: cada 3-6 segundos, no cada 30-60 como en un video largo.
+
+## 5. Escenas de pantalla
+- No aplica (sin grabación de pantalla en este reel).
+
+## 6. Música
+- Como estilo.md, presente desde el segundo 0 (no hay "intro sin música" en un reel de 3s).
+
+## 7. Cortes y pausas
+- Cortar: silencios entre los 4 clips, cualquier arranque falso al inicio de cada uno.
+- Respetar: nada especial, priorizar ritmo sobre pausas naturales.
+
+## 8. Bloopers a conservar
+- Ninguno (es avatar de IA, no aplica).
+
+## 9. Entrega
+- Archivo: renders/2026-09-18-reel-final.mp4
+- Resolución: 1080×1920, 60 fps
 - Antes de entregar: revisá tu render solo y corregí lo que haga falta.
 ```

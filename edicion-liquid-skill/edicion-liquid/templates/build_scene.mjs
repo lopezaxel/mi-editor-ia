@@ -7,23 +7,46 @@ import { fileURLToPath } from 'node:url'
 import { makeLens, lensFilter } from './lib/lens.mjs'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
-const W = 1920
-const H = 1080
 const EDGE = 0.35 // segundos limpios al principio y al final de cada escena
 const TYPES = ['stat-card', 'headline', 'phrase', 'steps', 'diagram', 'logo-card', 'photo-card', 'lower-third', 'cta-window', 'split-screen']
-const DEFAULT_SAFE = [680, 270, 560, 810] // zona de la cara (x, y, ancho, alto) con la persona centrada
 
-const HELP = `build_scene.mjs — escena Liquid Glass para HyperFrames 0.8.43
+const STYLES_DIR = path.join(HERE, '..', 'estilos')
+const DEFAULT_STYLE = 'liquid-glass'
+function listStyles() {
+  const extra = fs.existsSync(STYLES_DIR) ? fs.readdirSync(STYLES_DIR).filter((d) => fs.existsSync(path.join(STYLES_DIR, d, 'style.css'))) : []
+  return [DEFAULT_STYLE, ...extra.filter((s) => s !== DEFAULT_STYLE)]
+}
+
+// ── Formato del lienzo ──────────────────────────────────────────────────────
+// "horizontal" (16:9, default) es el de siempre, sin cambios. "vertical" (9:16,
+// reels/TikTok) es nuevo: cambia el tamaño del lienzo y por lo tanto los
+// márgenes/centro vertical que usa place() (no tiene sentido reusar los mismos
+// píxeles absolutos en un lienzo 1080 de ancho que en uno de 1920).
+// `safe`: zona de la cara (x, y, ancho, alto) con la persona centrada — default
+// razonable para un avatar de IA vertical; ajustar por escena si no aplica.
+const DEFAULT_FORMAT = 'horizontal'
+const FORMATS = {
+  horizontal: { W: 1920, H: 1080, marginX: 70, marginTopY: 40, marginBottomY: 90, vCenterLeft: 525, vCenterRight: 515, safe: [680, 270, 560, 810] },
+  vertical: { W: 1080, H: 1920, marginX: 50, marginTopY: 50, marginBottomY: 140, vCenterLeft: 950, vCenterRight: 940, safe: [240, 420, 600, 1000] },
+}
+function listFormats() { return Object.keys(FORMATS) }
+
+const HELP = `build_scene.mjs — escena HyperFrames (motor multi-estilo, multi-formato) para HyperFrames 0.8.43
 
 Uso:
   node <skill>/templates/build_scene.mjs --scene escena.json [--id <id>] [--project <dir>]
-       [--theme tema.json] [--out <archivo.html>] [--no-check-assets]
+       [--theme tema.json] [--style <nombre>] [--format <nombre>] [--out <archivo.html>] [--no-check-assets]
 
   --scene    JSON con UNA escena, o {"scenes":[...]} (entonces --id elige cuál)
   --id       id de la escena dentro del manifest
   --project  carpeta del proyecto HyperFrames (default: carpeta actual). Las rutas
              de footage/src del JSON son relativas a esta carpeta.
   --theme    tema.json (fuente, colores, material) derivado de estilo.md
+  --style    estilo visual a usar (default "${DEFAULT_STYLE}"). Disponibles: ${listStyles().join(', ')}.
+             Cada estilo vive en estilos/<nombre>/ (style.css + estilo-visual.md); el JSON de
+             escena es el mismo para cualquier estilo, ver templates/API.md.
+  --format   orientación del lienzo (default "${DEFAULT_FORMAT}"). Disponibles: ${listFormats().join(', ')}.
+             "vertical" = 1080×1920 (reels/TikTok). split-screen no está afinado aún para vertical.
   --out      default: <project>/index.html. Siempre se guarda además una copia
              en <project>/scenes/<id>.html.txt para reeditar.
   --no-check-assets  no exige que existan los archivos referenciados
@@ -34,7 +57,7 @@ Después: npx hyperframes check --at <t...>  y  npx hyperframes snapshot --at <t
 
 // ── CLI ─────────────────────────────────────────────────────────────────────
 function parseArgs(argv) {
-  const o = { project: process.cwd(), checkAssets: true }
+  const o = { project: process.cwd(), checkAssets: true, style: DEFAULT_STYLE, format: DEFAULT_FORMAT }
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]
     const next = () => {
@@ -48,6 +71,8 @@ function parseArgs(argv) {
     else if (a === '--id') o.id = next()
     else if (a === '--project') o.project = next()
     else if (a === '--theme') o.theme = next()
+    else if (a === '--style') o.style = next()
+    else if (a === '--format') o.format = next()
     else if (a === '--out') o.out = next()
     else if (a === '--no-check-assets') o.checkAssets = false
     else die(`Argumento desconocido: ${a}`)
@@ -83,16 +108,16 @@ function place(slot, w, h, id) {
     return { x: slot.x, y: slot.y, axis: 'x', dir }
   }
   switch (slot) {
-    case 'left': return { x: 70, y: Math.max(40, Math.round(525 - h / 2)), axis: 'x', dir: -1 }
-    case 'right': return { x: W - 70 - w, y: Math.max(40, Math.round(515 - h / 2)), axis: 'x', dir: 1 }
+    case 'left': return { x: FMT.marginX, y: Math.max(FMT.marginTopY, Math.round(FMT.vCenterLeft - h / 2)), axis: 'x', dir: -1 }
+    case 'right': return { x: W - FMT.marginX - w, y: Math.max(FMT.marginTopY, Math.round(FMT.vCenterRight - h / 2)), axis: 'x', dir: 1 }
     case 'top': return { x: Math.round((W - w) / 2), y: 24, axis: 'y', dir: -1 }
-    case 'top-left': return { x: 70, y: 40, axis: 'x', dir: -1 }
-    case 'top-right': return { x: W - 70 - w, y: 40, axis: 'x', dir: 1 }
-    case 'bottom-left': return { x: 70, y: H - 90 - h, axis: 'x', dir: -1 }
-    case 'bottom-right': return { x: W - 70 - w, y: H - 90 - h, axis: 'x', dir: 1 }
+    case 'top-left': return { x: FMT.marginX, y: FMT.marginTopY, axis: 'x', dir: -1 }
+    case 'top-right': return { x: W - FMT.marginX - w, y: FMT.marginTopY, axis: 'x', dir: 1 }
+    case 'bottom-left': return { x: FMT.marginX, y: H - FMT.marginBottomY - h, axis: 'x', dir: -1 }
+    case 'bottom-right': return { x: W - FMT.marginX - w, y: H - FMT.marginBottomY - h, axis: 'x', dir: 1 }
     default:
       fail(`${id}: slot "${slot}" inválido (left|right|top|top-left|top-right|bottom-left|bottom-right|{x,y})`)
-      return { x: 70, y: 400, axis: 'x', dir: -1 }
+      return { x: FMT.marginX, y: 400, axis: 'x', dir: -1 }
   }
 }
 const intersects = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h
@@ -153,12 +178,18 @@ function buildElement(e, idx, ctx) {
     }
     case 'headline': {
       need('title')
-      pos = { x: 290, y: 75, axis: 'y', dir: -1 }
-      box = { x: 290, y: 75, w: 1340, h: e.pill ? 167 : 100 }
+      // Único tipo sin `place()`: proporciones fijas del lienzo (no píxeles fijos)
+      // para que escale entre formato horizontal y vertical. Las razones son
+      // exactas (1340/1920, 75/1080, etc): en horizontal dan pixel a pixel los
+      // valores históricos; en vertical, su equivalente proporcional.
+      const titleW = Math.round(W * (1340 / 1920)), titleLeft = Math.round((W - titleW) / 2), titleTop = Math.round(H * (75 / 1080))
+      const pillW = Math.round(W * (490 / 1920)), pillLeft = Math.round((W - pillW) / 2), pillTop = Math.round(H * (190 / 1080))
+      pos = { x: titleLeft, y: titleTop, axis: 'y', dir: -1 }
+      box = { x: titleLeft, y: titleTop, w: titleW, h: e.pill ? pillTop + 52 - titleTop : 100 }
       const tone = e.pill_tone === 'light' ? 'light' : 'dark'
       html =
-        `<div id="${id}" class="lf-headline"><div id="${id}-t" class="h-title${e.scrim === false ? '' : ' scrim'}" data-fit="w" data-layout-allow-overlap>${esc(e.title)}</div>` +
-        (e.pill ? `<div id="${id}-p" class="h-pill ${tone}">${esc(e.pill)}</div>` : '') + `</div>`
+        `<div id="${id}" class="lf-headline"><div id="${id}-t" class="h-title${e.scrim === false ? '' : ' scrim'}" data-fit="w" data-layout-allow-overlap style="left:${titleLeft}px;top:${titleTop}px;width:${titleW}px">${esc(e.title)}</div>` +
+        (e.pill ? `<div id="${id}-p" class="h-pill ${tone}" style="left:${pillLeft}px;top:${pillTop}px;width:${pillW}px">${esc(e.pill)}</div>` : '') + `</div>`
       break
     }
     case 'phrase': {
@@ -191,7 +222,7 @@ function buildElement(e, idx, ctx) {
       if (loop && !(loop.from >= 1 && loop.to >= 1 && loop.from <= nodes.length && loop.to <= nodes.length && loop.to < loop.from))
         fail(`${ctx.sid}/${id}: loop {from,to} usa números de nodo 1..${nodes.length} con to < from`)
       if ((e.layout || 'row') === 'row') {
-        const w = num(e.width, 1240), h = 240
+        const w = num(e.width, Math.min(1240, W - 160)), h = 240
         pos = place(e.slot || 'top', w, h, id)
         box = { x: pos.x, y: pos.y, w, h }
         const pad = 30, colW = (w - pad * 2) / nodes.length, cx = (i) => pad + colW * (i + 0.5)
@@ -285,19 +316,21 @@ function buildElement(e, idx, ctx) {
       need('src')
       ctx.assets.push(e.src)
       ctx.split = true
+      if (opts.format !== 'horizontal') warn(`${ctx.sid}/${id}: split-screen no está afinado para formato "${opts.format}" todavía (funciona, pero las proporciones se pensaron para horizontal) — revisá la snapshot con más atención`)
       const pw = Math.round(W * num(e.person_width_ratio, 0.38))
-      const pcx = num(e.person_center_x, 960)
+      const pcx = num(e.person_center_x, Math.round(W / 2))
       const personLeft = (e.person_side || 'left') === 'left'
       const L = Math.round(pcx - pw / 2), R = W - (L + pw)
       if (L < 0 || R < 0) fail(`${ctx.sid}/${id}: person_center_x deja el recorte fuera del cuadro`)
       const targetX = personLeft ? 50 : W - 50 - pw
       const dx = targetX - L
+      const personH = H - 80
       // screen_aspect: proporción ancho:alto de la grabación ("4:3" horizontal por defecto, "3:4" para tablet/celu en vertical)
       const [aw, ah] = String(e.screen_aspect || '4:3').split(':').map(Number)
       if (!(aw > 0 && ah > 0)) fail(`${ctx.sid}/${id}: screen_aspect inválido (usá "4:3", "3:4", "16:9"...)`)
       const areaW = W - 150 - pw
       let vw = areaW - 26, vh = Math.round(vw * ah / aw)
-      if (70 + vh + 13 > 1000) { vh = 1000 - 83; vw = Math.round(vh * aw / ah) }
+      if (70 + vh + 13 > personH) { vh = personH - 83; vw = Math.round(vh * aw / ah) }
       const winW = vw + 26, winH = 70 + vh + 13
       const winX = Math.round((personLeft ? 50 + pw + 50 : 50) + (areaW - winW) / 2)
       const winY = Math.round((H - winH) / 2)
@@ -312,7 +345,7 @@ function buildElement(e, idx, ctx) {
         `<div class="chrome"><i></i><i></i><i></i><div class="address lf-ink">${esc(e.address || '')}</div></div>` +
         `<div class="viewport" style="background:${esc(e.background || '#0b0f14')}"><video id="${vid}" class="screen clip" src="${esc(e.src)}" data-start="${r3(e.in)}" data-duration="${r3(e.out + 1.0 - e.in)}" data-media-start="${num(e.media_start, 0)}" data-track-index="${ctx.track++}" muted playsinline style="object-fit:${e.fit === 'cover' ? 'cover' : 'contain'}"></video></div>`
       html =
-        `<div id="${id}-frame" class="lf-person-rim" data-layout-ignore style="position:absolute;left:${targetX}px;top:40px;width:${pw}px;height:1000px;border-radius:44px;pointer-events:none;box-shadow:inset 0 2px 2px #ffffffd9,inset 0 -2px 3px #ffffff80;z-index:1"></div>` +
+        `<div id="${id}-frame" class="lf-person-rim" data-layout-ignore style="position:absolute;left:${targetX}px;top:40px;width:${pw}px;height:${personH}px;border-radius:44px;pointer-events:none;box-shadow:inset 0 2px 2px #ffffffd9,inset 0 -2px 3px #ffffff80;z-index:1"></div>` +
         glassShell({ id, cls: 'window', box, radius: 35, material, blur: 1.5, inner })
       const t0 = e.in, t1 = e.out
       const full = `inset(0px 0px 0px 0px round 0px)`
@@ -380,6 +413,11 @@ const opts = parseArgs(process.argv.slice(2))
 if (opts.help) { console.log(HELP); process.exit(0) }
 if (opts.types) { console.log(TYPES.join('\n')); process.exit(0) }
 if (!opts.scene) die('Falta --scene')
+if (!FORMATS[opts.format]) die(`Formato "${opts.format}" no encontrado. Disponibles: ${listFormats().join(', ')}`)
+
+const FMT = FORMATS[opts.format]
+const W = FMT.W
+const H = FMT.H
 
 const project = path.resolve(opts.project)
 const doc = JSON.parse(fs.readFileSync(opts.scene, 'utf8'))
@@ -399,7 +437,7 @@ const fps = num(scene.fps, 60)
 if (!scene.footage) fail('footage es obligatorio (ruta relativa al proyecto)')
 const mode = scene.mode === 'intro' ? 'intro' : 'body'
 const ctx = { sid, material: scene.material || theme.material || 'light', assets: [scene.footage], track: 2, split: false, bg: [], footage: scene.footage, mediaStart: num(scene.media_start, 0) }
-const safe = scene.safe_zone === null ? null : scene.safe_zone || DEFAULT_SAFE
+const safe = scene.safe_zone === null ? null : scene.safe_zone || FMT.safe
 const elements = Array.isArray(scene.elements) ? scene.elements : []
 if (!elements.length) warn('La escena no tiene elements: solo se renderiza el footage')
 
@@ -457,7 +495,11 @@ const fontFaces = (theme.font_faces || [])
   .join('')
 for (const f of theme.font_faces || []) if (opts.checkAssets && !fs.existsSync(path.resolve(project, f.src))) { console.error(`ERROR: no existe la fuente ${f.src}`); process.exit(2) }
 
-const css = fs.readFileSync(path.join(HERE, 'liquid.css'), 'utf8')
+// El estilo por default lee templates/liquid.css (ruta histórica, sin cambios);
+// cualquier otro estilo vive en estilos/<nombre>/style.css. Mismo contrato de clases.
+const cssPath = opts.style === DEFAULT_STYLE ? path.join(HERE, 'liquid.css') : path.join(STYLES_DIR, opts.style, 'style.css')
+if (!fs.existsSync(cssPath)) die(`Estilo "${opts.style}" no encontrado. Disponibles: ${listStyles().join(', ')}`)
+const css = fs.readFileSync(cssPath, 'utf8')
 const footageAttrs = `src="${esc(scene.footage)}" data-start="0" data-duration="${r3(D)}" data-media-start="${num(scene.media_start, 0)}" muted playsinline`
 const bg = ctx.bg.length ? `<div id="lf-bg" data-layout-ignore>${ctx.bg.join('')}</div>` : ''
 const stage = `<div id="lf-stage"><video id="lf-footage" class="lf-video clip" ${footageAttrs} data-track-index="1"></video></div>`
@@ -475,8 +517,8 @@ for (const el of built) {
 js.push(`window.__timelines["liquid"]=tl;`)
 
 const html = `<!DOCTYPE html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=1920, height=1080"><title>${esc(sid)}</title>
-<!-- Generado por edicion-liquid/templates/build_scene.mjs (modo ${mode}). Editá el JSON y reconstruí; no edites a mano. -->
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=${W}, height=${H}"><title>${esc(sid)}</title>
+<!-- Generado por edicion-liquid/templates/build_scene.mjs (modo ${mode}, estilo ${opts.style}, formato ${opts.format} ${W}x${H}). Editá el JSON y reconstruí; no edites a mano. -->
 <script src="node_modules/gsap/dist/gsap.min.js"></script>
 <style>${fontFaces}
 ${css}
@@ -498,4 +540,4 @@ fs.writeFileSync(path.join(project, 'scenes', `${sid}.html.txt`), html)
 fs.writeFileSync(path.join(project, 'scenes', `${sid}.json`), JSON.stringify(scene, null, 2) + '\n')
 warnings.forEach((x) => console.error(`AVISO: ${x}`))
 const samples = [...new Set(built.flatMap((b) => [r3((b.e.in + b.e.out) / 2 + 0.2)]))].sort((a, b) => a - b)
-console.log(JSON.stringify({ id: sid, output: outPath, duration: D, fps, mode, elements: built.map((b) => ({ id: b.id, type: b.e.type, box: b.box, in: b.e.in, out: b.e.out })), lenses: lenses.size, sugerido_check: `npx hyperframes check --at ${samples.join(',') || r3(D / 2)}` }, null, 2))
+console.log(JSON.stringify({ id: sid, output: outPath, duration: D, fps, mode, style: opts.style, format: opts.format, canvas: `${W}x${H}`, elements: built.map((b) => ({ id: b.id, type: b.e.type, box: b.box, in: b.e.in, out: b.e.out })), lenses: lenses.size, sugerido_check: `npx hyperframes check --at ${samples.join(',') || r3(D / 2)}` }, null, 2))

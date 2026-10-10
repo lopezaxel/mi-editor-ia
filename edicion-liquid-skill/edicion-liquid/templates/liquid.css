@@ -43,10 +43,11 @@ body { font-family: var(--lf-font); color: var(--lf-ink); }
 .stat .amount span { font-size: 27px; letter-spacing: -1px; margin-left: 8px; font-weight: 700; }
 .stat .per { position: absolute; left: 35px; bottom: 29px; font-size: 25px; font-weight: 500; color: var(--lf-label); text-shadow: var(--lf-label-glow); }
 
-/* headline (sin vidrio de lente: titular sobre el cielo + pastilla) */
-.lf-headline { position: absolute; left: 0; top: 0; width: 1920px; height: 0; }
-.lf-headline .h-title { position: absolute; left: 290px; top: 75px; width: 1340px; text-align: center; font-size: 90px; font-weight: 750; letter-spacing: -3px; line-height: 1.1; color: var(--lf-title); text-shadow: 0 2px 3px #0003, 0 6px 24px #0006, 0 0 42px #06182c55; white-space: nowrap; }
-.lf-headline .h-pill { position: absolute; left: 715px; top: 190px; width: 490px; height: 52px; display: flex; align-items: center; justify-content: center; border-radius: 16px; font-size: 25px; font-weight: 550; letter-spacing: 3px; text-transform: uppercase; white-space: nowrap; border: 1px solid #ffffff80; backdrop-filter: blur(4px) saturate(1.2); -webkit-backdrop-filter: blur(4px) saturate(1.2); box-shadow: 0 14px 28px #05192820, inset 0 1px 1px #fffd, inset 0 -1px 1px #fff9; }
+/* headline (sin vidrio de lente: titular sobre el cielo + pastilla).
+   left/top/width los pone build_scene.mjs inline (dependen del formato W×H). */
+.lf-headline { position: absolute; left: 0; top: 0; height: 0; }
+.lf-headline .h-title { position: absolute; text-align: center; font-size: 90px; font-weight: 750; letter-spacing: -3px; line-height: 1.1; color: var(--lf-title); text-shadow: 0 2px 3px #0003, 0 6px 24px #0006, 0 0 42px #06182c55; white-space: nowrap; }
+.lf-headline .h-pill { position: absolute; height: 52px; display: flex; align-items: center; justify-content: center; border-radius: 16px; font-size: 25px; font-weight: 550; letter-spacing: 3px; text-transform: uppercase; white-space: nowrap; border: 1px solid #ffffff80; backdrop-filter: blur(4px) saturate(1.2); -webkit-backdrop-filter: blur(4px) saturate(1.2); box-shadow: 0 14px 28px #05192820, inset 0 1px 1px #fffd, inset 0 -1px 1px #fff9; }
 .lf-headline .h-title.scrim::before { content: ""; position: absolute; left: 120px; right: 120px; top: -60px; bottom: -60px; z-index: -1; background: radial-gradient(closest-side, #06182c80 0%, #06182c52 50%, #06182c1c 80%, #06182c00 100%); }
 .h-pill.dark { background: #0c263859; color: #fff; text-shadow: 0 1px 8px #061220c0; }
 .h-pill.light { background: #eef6ff55; color: #102d43; text-shadow: 0 1px 7px #fffc; }
